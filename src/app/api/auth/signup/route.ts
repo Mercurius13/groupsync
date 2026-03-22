@@ -6,11 +6,13 @@ import { signToken } from '@/lib/auth'
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { name, email, password } = body
+    const { name, email: rawEmail, password } = body
 
-    if (!name || !email || !password) {
+    if (!name || !rawEmail || !password) {
       return NextResponse.json({ error: 'Name, email, and password are required' }, { status: 400 })
     }
+
+    const email = rawEmail.toLowerCase().trim()
 
     if (password.length < 6) {
       return NextResponse.json({ error: 'Password must be at least 6 characters' }, { status: 400 })

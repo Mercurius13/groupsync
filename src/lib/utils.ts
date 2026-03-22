@@ -1,6 +1,9 @@
 export function formatDate(date: string | Date): string {
-  const d = new Date(date)
-  return d.toLocaleDateString('en-US', {
+  // Parse date-only strings (YYYY-MM-DD) directly to avoid UTC-to-local timezone shift
+  const str = typeof date === 'string' ? date : date.toISOString()
+  const dateOnly = str.slice(0, 10)
+  const [year, month, day] = dateOnly.split('-').map(Number)
+  return new Date(year, month - 1, day).toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
@@ -67,5 +70,11 @@ export function getActionIcon(actionType: string): string {
 
 export function isOverdue(deadline: string | Date | null | undefined): boolean {
   if (!deadline) return false
-  return new Date(deadline) < new Date()
+  const str = typeof deadline === 'string' ? deadline : deadline.toISOString()
+  const dateOnly = str.slice(0, 10)
+  const [year, month, day] = dateOnly.split('-').map(Number)
+  const deadlineDate = new Date(year, month - 1, day)
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  return deadlineDate < today
 }
