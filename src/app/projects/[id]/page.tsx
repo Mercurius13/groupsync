@@ -52,15 +52,25 @@ export default function ProjectOverviewPage() {
   const projectId = params.id as string
   const [project, setProject] = useState<Project | null>(null)
   const [loading, setLoading] = useState(true)
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
+  const [currentUserRole, setCurrentUserRole] = useState<string>('student')
   const [addMemberInput, setAddMemberInput] = useState('')
   const [addMemberResults, setAddMemberResults] = useState<{ ok: string[]; fail: { email: string; reason: string }[] } | null>(null)
   const [addingMember, setAddingMember] = useState(false)
+  const [removingMemberId, setRemovingMemberId] = useState<string | null>(null)
 
   async function fetchProject() {
     try {
-      const res = await fetch(`/api/projects/${projectId}`)
-      const data = await res.json()
-      if (data.project) setProject(data.project)
+      const [projectRes, meRes] = await Promise.all([
+        fetch(`/api/projects/${projectId}`),
+        fetch('/api/auth/me'),
+      ])
+      const [projectData, meData] = await Promise.all([projectRes.json(), meRes.json()])
+      if (projectData.project) setProject(projectData.project)
+      if (meData.user) {
+        setCurrentUserId(meData.user.id)
+        setCurrentUserRole(meData.user.role)
+      }
     } catch (error) {
       console.error('Failed to fetch project:', error)
     } finally {
@@ -71,6 +81,21 @@ export default function ProjectOverviewPage() {
   useEffect(() => {
     fetchProject()
   }, [projectId])
+
+  async function handleRemoveMember(userId: string, name: string) {
+    if (!confirm(`Remove ${name} from this project? Their task assignments will also be cleared.`)) return
+    setRemovingMemberId(userId)
+    try {
+      const res = await fetch(`/api/projects/${projectId}/members/${userId}`, { method: 'DELETE' })
+      const data = await res.json()
+      if (!res.ok) alert(data.error || 'Failed to remove member')
+      else fetchProject()
+    } catch {
+      alert('Something went wrong.')
+    } finally {
+      setRemovingMemberId(null)
+    }
+  }
 
   async function handleAddMember(e: React.FormEvent) {
     e.preventDefault()
@@ -183,26 +208,42 @@ export default function ProjectOverviewPage() {
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
             <h2 className="text-lg font-semibold text-gray-800 mb-4">Team Members</h2>
             <div className="space-y-3 mb-5">
-              {project.members.map((m) => (
-                <div key={m.id} className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-indigo-100 text-indigo-700 rounded-full flex items-center justify-center text-sm font-semibold">
-                      {m.user.name.charAt(0).toUpperCase()}
+              {project.members.map((m) => {
+                const isProjectLeader = m.user.id === project.leader.id
+                const canRemove = (currentUserId === project.leader.id || currentUserRole === 'teacher') && !isProjectLeader
+                return (
+                  <div key={m.id} className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-indigo-100 text-indigo-700 rounded-full flex items-center justify-center text-sm font-semibold">
+                        {m.user.name.charAt(0).toUpperCase()}
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">{m.user.name}</p>
+                        <p className="text-xs text-gray-400">{m.user.email}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">{m.user.name}</p>
-                      <p className="text-xs text-gray-400">{m.user.email}</p>
+                    <div className="flex items-center gap-2">
+                      <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                        m.role === 'leader' ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-600'
+                      }`}>
+                        {m.role}
+                      </span>
+                      {canRemove && (
+                        <button
+                          onClick={() => handleRemoveMember(m.user.id, m.user.name)}
+                          disabled={removingMemberId === m.user.id}
+                          className="text-gray-300 hover:text-red-500 transition-colors disabled:opacity-50"
+                          title="Remove member"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      )}
                     </div>
                   </div>
-                  <span className={`text-xs px-2 py-1 rounded-full font-medium ${
-                    m.role === 'leader'
-                      ? 'bg-indigo-100 text-indigo-700'
-                      : 'bg-gray-100 text-gray-600'
-                  }`}>
-                    {m.role}
-                  </span>
-                </div>
-              ))}
+                )
+              })}
             </div>
 
             {/* Add member form */}
