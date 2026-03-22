@@ -131,7 +131,6 @@ export default function TasksPage() {
       if (!res.ok) {
         setFormError(data.error || 'Failed to create task')
       } else {
-        setShowForm(false)
         setFormTitle('')
         setFormDeadline('')
         fetchData()
