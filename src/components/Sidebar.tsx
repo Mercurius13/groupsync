@@ -14,11 +14,17 @@ export default function Sidebar() {
   const pathname = usePathname()
   const router = useRouter()
   const [user, setUser] = useState<User | null>(null)
+  const [inviteCount, setInviteCount] = useState(0)
 
   useEffect(() => {
     fetch('/api/auth/me')
       .then((r) => r.json())
       .then((d) => { if (d.user) setUser(d.user) })
+      .catch(() => {})
+
+    fetch('/api/invites')
+      .then((r) => r.json())
+      .then((d) => { if (d.invites) setInviteCount(d.invites.length) })
       .catch(() => {})
   }, [])
 
@@ -35,6 +41,16 @@ export default function Sidebar() {
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+        </svg>
+      ),
+    },
+    {
+      href: '/invites',
+      label: 'Invitations',
+      badge: inviteCount,
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
         </svg>
       ),
     },
@@ -72,13 +88,16 @@ export default function Sidebar() {
               key={link.href}
               href={link.href}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
-                isActive
-                  ? 'bg-indigo-600 text-white'
-                  : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                isActive ? 'bg-indigo-600 text-white' : 'text-gray-400 hover:bg-gray-800 hover:text-white'
               }`}
             >
               {link.icon}
-              <span className="text-sm font-medium">{link.label}</span>
+              <span className="text-sm font-medium flex-1">{link.label}</span>
+              {link.badge != null && link.badge > 0 && (
+                <span className="bg-indigo-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center">
+                  {link.badge}
+                </span>
+              )}
             </Link>
           )
         })}
