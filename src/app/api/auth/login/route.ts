@@ -23,9 +23,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 })
     }
 
-    const token = await signToken({ userId: user.id, email: user.email, name: user.name })
+    const token = await signToken({ userId: user.id, email: user.email, name: user.name, role: user.role })
 
-    const response = NextResponse.json({ user: { id: user.id, name: user.name, email: user.email } })
+    const response = NextResponse.json({ user: { id: user.id, name: user.name, email: user.email, role: user.role } })
     response.cookies.set('session', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
