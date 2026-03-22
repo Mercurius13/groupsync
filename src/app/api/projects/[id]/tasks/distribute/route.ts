@@ -15,8 +15,10 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     if (!project) {
       return NextResponse.json({ error: 'Project not found' }, { status: 404 })
     }
-    if (project.leaderId !== session.userId) {
-      return NextResponse.json({ error: 'Only the project leader can distribute tasks' }, { status: 403 })
+    const isLeader = project.leaderId === session.userId
+    const isTeacher = session.role === 'teacher'
+    if (!isLeader && !isTeacher) {
+      return NextResponse.json({ error: 'Only the project leader or a teacher can distribute tasks' }, { status: 403 })
     }
 
     const body = await request.json()
