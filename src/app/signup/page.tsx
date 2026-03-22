@@ -1,16 +1,36 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 
 export default function SignupPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const inviteToken = searchParams.get('token')
+
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [inviteInfo, setInviteInfo] = useState<{ projectTitle: string; email: string } | null>(null)
+  const [inviteInvalid, setInviteInvalid] = useState(false)
+
+  useEffect(() => {
+    if (!inviteToken) return
+    fetch(`/api/invites/${inviteToken}`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.invite) {
+          setInviteInfo(data.invite)
+          setEmail(data.invite.email)
+        } else {
+          setInviteInvalid(true)
+        }
+      })
+      .catch(() => setInviteInvalid(true))
+  }, [inviteToken])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -21,7 +41,7 @@ export default function SignupPage() {
       const res = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify({ name, email, password, inviteToken }),
       })
 
       const data = await res.json()
@@ -31,7 +51,11 @@ export default function SignupPage() {
         return
       }
 
-      router.push('/dashboard')
+      if (data.joinedProject) {
+        router.push(`/projects/${data.joinedProject.id}`)
+      } else {
+        router.push('/dashboard')
+      }
       router.refresh()
     } catch {
       setError('Something went wrong. Please try again.')
@@ -54,6 +78,21 @@ export default function SignupPage() {
         </div>
 
         <div className="bg-white rounded-2xl shadow-lg p-8">
+          {inviteInfo && (
+            <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4 mb-6">
+              <p className="text-sm font-semibold text-indigo-800">You've been invited!</p>
+              <p className="text-sm text-indigo-600 mt-0.5">
+                Create your account to join <strong>{inviteInfo.projectTitle}</strong>.
+              </p>
+            </div>
+          )}
+
+          {inviteInvalid && (
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6">
+              <p className="text-sm text-amber-700">This invite link has expired or already been used. You can still create an account.</p>
+            </div>
+          )}
+
           <h2 className="text-2xl font-semibold text-gray-800 mb-6">Create Account</h2>
 
           {error && (
@@ -88,9 +127,13 @@ export default function SignupPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                readOnly={!!inviteInfo}
+                className={`w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition ${inviteInfo ? 'bg-gray-50 text-gray-500' : ''}`}
                 placeholder="you@university.edu"
               />
+              {inviteInfo && (
+                <p className="text-xs text-gray-400 mt-1">Email locked to your invite address</p>
+              )}
             </div>
 
             <div>
@@ -115,7 +158,7 @@ export default function SignupPage() {
               disabled={loading}
               className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white font-semibold py-2.5 rounded-lg transition duration-200 mt-2"
             >
-              {loading ? 'Creating account...' : 'Create Account'}
+              {loading ? 'Creating account...' : inviteInfo ? `Create Account & Join ${inviteInfo.projectTitle}` : 'Create Account'}
             </button>
           </form>
 

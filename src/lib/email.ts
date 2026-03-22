@@ -7,16 +7,18 @@ export async function sendProjectInvite({
   inviterName,
   projectTitle,
   appUrl,
+  inviteToken,
 }: {
   toEmail: string
   inviterName: string
   projectTitle: string
   appUrl: string
+  inviteToken: string
 }) {
-  const signupUrl = `${appUrl}/signup`
+  const signupUrl = `${appUrl}/signup?token=${inviteToken}`
 
   await resend.emails.send({
-    from: 'GroupSync <noreply@groupsync.app>',
+    from: 'GroupSync <onboarding@resend.dev>',
     to: toEmail,
     subject: `${inviterName} invited you to join "${projectTitle}" on GroupSync`,
     html: `
@@ -47,7 +49,7 @@ export async function sendProjectInvite({
           Create your account
         </a>
         <p style="margin-top: 24px; color: #9ca3af; font-size: 12px;">
-          Once you sign up with this email address (${toEmail}), ask ${inviterName} to add you to the project.
+          Sign up with this email address (${toEmail}) and you'll be added to the project automatically.
         </p>
       </div>
     `,

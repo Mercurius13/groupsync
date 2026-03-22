@@ -57,11 +57,16 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     if (!userToAdd) {
       const project = await prisma.project.findUnique({ where: { id: params.id }, select: { title: true } })
       const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://groupsync.vercel.app'
+      const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days
+      const invite = await prisma.invite.create({
+        data: { projectId: params.id, email, expiresAt },
+      })
       await sendProjectInvite({
         toEmail: email,
         inviterName: session.name,
         projectTitle: project?.title ?? 'a project',
         appUrl,
+        inviteToken: invite.token,
       })
       return NextResponse.json(
         { error: 'No account found for that email. An invitation has been sent.' },
