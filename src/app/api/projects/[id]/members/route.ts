@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSession } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { sendProjectInvite } from '@/lib/email'
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   const session = await getSession(request)
@@ -54,7 +55,18 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
 
     const userToAdd = await prisma.user.findUnique({ where: { email } })
     if (!userToAdd) {
-      return NextResponse.json({ error: 'User with that email not found' }, { status: 404 })
+      const project = await prisma.project.findUnique({ where: { id: params.id }, select: { title: true } })
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://groupsync.vercel.app'
+      await sendProjectInvite({
+        toEmail: email,
+        inviterName: session.name,
+        projectTitle: project?.title ?? 'a project',
+        appUrl,
+      })
+      return NextResponse.json(
+        { error: 'No account found for that email. An invitation has been sent.' },
+        { status: 404 }
+      )
     }
 
     const existingMember = await prisma.projectMember.findUnique({
