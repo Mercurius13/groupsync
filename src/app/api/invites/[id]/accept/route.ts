@@ -17,9 +17,13 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     if (invite.accepted) return NextResponse.json({ error: 'Already accepted' }, { status: 409 })
     if (new Date() > invite.expiresAt) return NextResponse.json({ error: 'Invite has expired' }, { status: 410 })
 
+    // Always look up the user by email from the DB — avoids stale JWT userId issues
+    const user = await prisma.user.findUnique({ where: { email: session.email } })
+    if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 })
+
     // Check not already a member
     const existing = await prisma.projectMember.findUnique({
-      where: { projectId_userId: { projectId: invite.project.id, userId: session.userId } },
+      where: { projectId_userId: { projectId: invite.project.id, userId: user.id } },
     })
     if (existing) {
       await prisma.invite.update({ where: { id: invite.id }, data: { accepted: true } })
@@ -27,15 +31,15 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     }
 
     await prisma.projectMember.create({
-      data: { projectId: invite.project.id, userId: session.userId, role: 'member' },
+      data: { projectId: invite.project.id, userId: user.id, role: 'member' },
     })
     await prisma.invite.update({ where: { id: invite.id }, data: { accepted: true } })
     await prisma.activityLog.create({
       data: {
         projectId: invite.project.id,
-        userId: session.userId,
+        userId: user.id,
         actionType: 'MEMBER_ADDED',
-        description: `${session.name} joined the project via invitation`,
+        description: `${user.name} joined the project via invitation`,
       },
     })
 
