@@ -94,7 +94,10 @@ export default function ProjectOverviewPage() {
             body: JSON.stringify({ email }),
           })
           const data = await res.json()
-          if (!res.ok) {
+          if (res.status === 202) {
+            // No account yet — invite sent
+            ok.push(`${email} (invite sent)`)
+          } else if (!res.ok) {
             fail.push({ email, reason: data.error || 'Failed' })
           } else {
             ok.push(data.member?.user?.name ?? email)

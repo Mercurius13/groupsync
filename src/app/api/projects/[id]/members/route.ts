@@ -69,8 +69,8 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
         inviteToken: invite.token,
       })
       return NextResponse.json(
-        { error: 'No account found for that email. An invitation has been sent.' },
-        { status: 404 }
+        { invited: true, message: 'No account found. An invitation email has been sent.' },
+        { status: 202 }
       )
     }
 
