@@ -41,12 +41,9 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
   }
 
   try {
-    const member = await prisma.projectMember.findUnique({
-      where: { projectId_userId: { projectId: params.id, userId: session.userId } },
-    })
-
-    if (!member) {
-      return NextResponse.json({ error: 'Access denied' }, { status: 403 })
+    const project = await prisma.project.findUnique({ where: { id: params.id } })
+    if (!project || project.leaderId !== session.userId) {
+      return NextResponse.json({ error: 'Only the project leader can create tasks' }, { status: 403 })
     }
 
     const body = await request.json()
