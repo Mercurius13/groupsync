@@ -55,7 +55,6 @@ export default function ReportPage() {
 
   const totalTasks = report.reduce((sum, r) => sum + r.tasksAssigned, 0)
   const totalCompleted = report.reduce((sum, r) => sum + r.tasksCompleted, 0)
-  const activeMembers = report.filter((r) => r.activityCount > 0).length
 
   return (
     <ProjectLayout projectId={projectId} projectTitle={projectTitle}>
@@ -85,14 +84,10 @@ export default function ReportPage() {
         ) : (
           <>
             {/* Summary stats */}
-            <div className="grid grid-cols-4 gap-4 mb-6 print:grid-cols-4">
+            <div className="grid grid-cols-3 gap-4 mb-6 print:grid-cols-3">
               <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center">
                 <p className="text-2xl font-bold text-gray-900">{report.length}</p>
                 <p className="text-sm text-gray-500 mt-1">Total Members</p>
-              </div>
-              <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center">
-                <p className="text-2xl font-bold text-green-600">{activeMembers}</p>
-                <p className="text-sm text-gray-500 mt-1">Active Members</p>
               </div>
               <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center">
                 <p className="text-2xl font-bold text-gray-900">{totalTasks}</p>

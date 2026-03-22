@@ -52,9 +52,8 @@ export default function ProjectOverviewPage() {
   const projectId = params.id as string
   const [project, setProject] = useState<Project | null>(null)
   const [loading, setLoading] = useState(true)
-  const [addMemberEmail, setAddMemberEmail] = useState('')
-  const [addMemberError, setAddMemberError] = useState('')
-  const [addMemberSuccess, setAddMemberSuccess] = useState('')
+  const [addMemberInput, setAddMemberInput] = useState('')
+  const [addMemberResults, setAddMemberResults] = useState<{ ok: string[]; fail: { email: string; reason: string }[] } | null>(null)
   const [addingMember, setAddingMember] = useState(false)
 
   async function fetchProject() {
@@ -75,29 +74,43 @@ export default function ProjectOverviewPage() {
 
   async function handleAddMember(e: React.FormEvent) {
     e.preventDefault()
-    setAddMemberError('')
-    setAddMemberSuccess('')
+    setAddMemberResults(null)
     setAddingMember(true)
 
-    try {
-      const res = await fetch(`/api/projects/${projectId}/members`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: addMemberEmail }),
+    const emails = addMemberInput
+      .split(',')
+      .map((e) => e.trim().toLowerCase())
+      .filter(Boolean)
+
+    const ok: string[] = []
+    const fail: { email: string; reason: string }[] = []
+
+    await Promise.all(
+      emails.map(async (email) => {
+        try {
+          const res = await fetch(`/api/projects/${projectId}/members`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email }),
+          })
+          const data = await res.json()
+          if (!res.ok) {
+            fail.push({ email, reason: data.error || 'Failed' })
+          } else {
+            ok.push(data.member?.user?.name ?? email)
+          }
+        } catch {
+          fail.push({ email, reason: 'Something went wrong' })
+        }
       })
-      const data = await res.json()
-      if (!res.ok) {
-        setAddMemberError(data.error || 'Failed to add member')
-      } else {
-        setAddMemberSuccess(`${data.member.user.name} added successfully!`)
-        setAddMemberEmail('')
-        fetchProject()
-      }
-    } catch {
-      setAddMemberError('Something went wrong.')
-    } finally {
-      setAddingMember(false)
+    )
+
+    setAddMemberResults({ ok, fail })
+    if (ok.length > 0) {
+      setAddMemberInput('')
+      fetchProject()
     }
+    setAddingMember(false)
   }
 
   if (loading) {
@@ -191,19 +204,23 @@ export default function ProjectOverviewPage() {
 
             {/* Add member form */}
             <div className="border-t border-gray-100 pt-4">
-              <p className="text-sm font-medium text-gray-700 mb-2">Add Member</p>
-              {addMemberError && (
-                <p className="text-xs text-red-600 mb-2">{addMemberError}</p>
-              )}
-              {addMemberSuccess && (
-                <p className="text-xs text-green-600 mb-2">{addMemberSuccess}</p>
+              <p className="text-sm font-medium text-gray-700 mb-2">Add Members</p>
+              {addMemberResults && (
+                <div className="mb-2 space-y-1">
+                  {addMemberResults.ok.map((name) => (
+                    <p key={name} className="text-xs text-green-600">✓ {name} added</p>
+                  ))}
+                  {addMemberResults.fail.map(({ email, reason }) => (
+                    <p key={email} className="text-xs text-red-600">✗ {email} — {reason}</p>
+                  ))}
+                </div>
               )}
               <form onSubmit={handleAddMember} className="flex gap-2">
                 <input
-                  type="email"
-                  value={addMemberEmail}
-                  onChange={(e) => setAddMemberEmail(e.target.value)}
-                  placeholder="member@university.edu"
+                  type="text"
+                  value={addMemberInput}
+                  onChange={(e) => setAddMemberInput(e.target.value)}
+                  placeholder="one@uni.edu, two@uni.edu, ..."
                   required
                   className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 />
@@ -215,6 +232,7 @@ export default function ProjectOverviewPage() {
                   {addingMember ? '...' : 'Add'}
                 </button>
               </form>
+              <p className="text-xs text-gray-400 mt-1">Separate multiple emails with commas</p>
             </div>
           </div>
 
