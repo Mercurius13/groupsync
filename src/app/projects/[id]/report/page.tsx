@@ -13,7 +13,6 @@ interface ReportEntry {
   tasksCompleted: number
   completionRate: number
   activityCount: number
-  isActive: boolean
 }
 
 interface Project {
@@ -56,7 +55,7 @@ export default function ReportPage() {
 
   const totalTasks = report.reduce((sum, r) => sum + r.tasksAssigned, 0)
   const totalCompleted = report.reduce((sum, r) => sum + r.tasksCompleted, 0)
-  const activeMembers = report.filter((r) => r.isActive).length
+  const activeMembers = report.filter((r) => r.activityCount > 0).length
 
   return (
     <ProjectLayout projectId={projectId} projectTitle={projectTitle}>
@@ -128,9 +127,6 @@ export default function ReportPage() {
                     <th className="text-center px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                       Activities
                     </th>
-                    <th className="text-center px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
@@ -178,17 +174,6 @@ export default function ReportPage() {
                       <td className="px-5 py-4 text-center">
                         <span className="text-sm font-semibold text-gray-900">{entry.activityCount}</span>
                       </td>
-                      <td className="px-5 py-4 text-center">
-                        <span
-                          className={`text-xs px-2.5 py-1 rounded-full font-semibold ${
-                            entry.isActive
-                              ? 'bg-green-100 text-green-700'
-                              : 'bg-red-100 text-red-600'
-                          }`}
-                        >
-                          {entry.isActive ? 'Active' : 'Inactive'}
-                        </span>
-                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -204,8 +189,7 @@ export default function ReportPage() {
             {/* Legend */}
             <div className="mt-4 p-4 bg-amber-50 border border-amber-100 rounded-xl">
               <p className="text-sm text-amber-700">
-                <span className="font-semibold">Note:</span> Members with fewer than 3 activity log entries are marked as{' '}
-                <span className="font-semibold text-red-600">Inactive</span>. Completion rate is calculated only for tasks assigned to that member.
+                <span className="font-semibold">Note:</span> Completion rate is calculated only for tasks assigned to that member.
               </p>
             </div>
           </>
