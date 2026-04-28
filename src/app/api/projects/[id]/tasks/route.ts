@@ -29,7 +29,6 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 
     return NextResponse.json({ tasks })
   } catch (error) {
-    console.error('Tasks GET error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -97,7 +96,6 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
 
     return NextResponse.json({ task }, { status: 201 })
   } catch (error) {
-    console.error('Tasks POST error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

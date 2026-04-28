@@ -26,7 +26,6 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 
     return NextResponse.json({ members })
   } catch (error) {
-    console.error('Members GET error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -101,7 +100,6 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
 
     return NextResponse.json({ member: newMember }, { status: 201 })
   } catch (error) {
-    console.error('Members POST error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

@@ -37,7 +37,6 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ projects })
   } catch (error) {
-    console.error('Projects GET error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -81,7 +80,6 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ project }, { status: 201 })
   } catch (error) {
-    console.error('Projects POST error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

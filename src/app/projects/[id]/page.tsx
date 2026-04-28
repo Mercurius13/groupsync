@@ -72,7 +72,6 @@ export default function ProjectOverviewPage() {
         setCurrentUserRole(meData.user.role)
       }
     } catch (error) {
-      console.error('Failed to fetch project:', error)
     } finally {
       setLoading(false)
     }

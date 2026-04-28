@@ -26,7 +26,6 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 
     return NextResponse.json({ messages })
   } catch (error) {
-    console.error('Chat GET error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -73,7 +72,6 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
 
     return NextResponse.json({ message }, { status: 201 })
   } catch (error) {
-    console.error('Chat POST error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

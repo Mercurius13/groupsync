@@ -41,7 +41,6 @@ export default function ReportPage() {
         if (reportData.project) setProject(reportData.project)
         if (projectData.project) setProjectTitle(projectData.project.title)
       } catch (error) {
-        console.error('Failed to fetch report:', error)
       } finally {
         setLoading(false)
       }

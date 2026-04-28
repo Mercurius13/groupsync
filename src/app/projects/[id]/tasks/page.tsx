@@ -95,7 +95,6 @@ export default function TasksPage() {
       }
       if (membersData.members) setMembers(membersData.members)
     } catch (error) {
-      console.error('Failed to fetch tasks:', error)
     } finally {
       setLoading(false)
     }

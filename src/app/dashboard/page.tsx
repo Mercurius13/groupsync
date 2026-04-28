@@ -39,7 +39,6 @@ export default function DashboardPage() {
         if (projectsData.projects) setProjects(projectsData.projects)
         if (meData.user) setUser(meData.user)
       } catch (error) {
-        console.error('Failed to fetch dashboard data:', error)
       } finally {
         setLoading(false)
       }

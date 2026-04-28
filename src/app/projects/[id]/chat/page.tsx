@@ -43,7 +43,6 @@ export default function ChatPage() {
         setMessages(data.messages)
       }
     } catch (error) {
-      console.error('Failed to fetch messages:', error)
     }
   }
 
@@ -58,7 +57,6 @@ export default function ChatPage() {
         if (projectData.project) setProjectTitle(projectData.project.title)
         if (meData.user) setCurrentUser(meData.user)
       } catch (error) {
-        console.error('Init error:', error)
       }
       await fetchMessages()
       setLoading(false)
@@ -94,7 +92,6 @@ export default function ChatPage() {
         await fetchMessages()
       }
     } catch (error) {
-      console.error('Failed to send message:', error)
     } finally {
       setSending(false)
     }

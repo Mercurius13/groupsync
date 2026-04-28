@@ -29,7 +29,6 @@ export default function InvitesPage() {
       const data = await res.json()
       if (data.invites) setInvites(data.invites)
     } catch (error) {
-      console.error('Failed to fetch invites:', error)
     } finally {
       setLoading(false)
     }

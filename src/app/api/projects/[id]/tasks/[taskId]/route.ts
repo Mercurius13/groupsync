@@ -108,7 +108,6 @@ export async function PUT(
 
     return NextResponse.json({ task: updatedTask })
   } catch (error) {
-    console.error('Task PUT error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -149,7 +148,6 @@ export async function DELETE(
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('Task DELETE error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

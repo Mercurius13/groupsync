@@ -29,7 +29,6 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ invites })
   } catch (error) {
-    console.error('Invites GET error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

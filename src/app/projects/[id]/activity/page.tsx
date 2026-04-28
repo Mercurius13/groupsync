@@ -64,7 +64,6 @@ export default function ActivityPage() {
       if (projectData.project) setProjectTitle(projectData.project.title)
       if (membersData.members) setMembers(membersData.members)
     } catch (error) {
-      console.error('Failed to fetch activity:', error)
     } finally {
       setLoading(false)
     }

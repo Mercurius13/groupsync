@@ -62,7 +62,6 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 
     return NextResponse.json({ report: reportData, project: { id: project.id, title: project.title } })
   } catch (error) {
-    console.error('Report GET error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

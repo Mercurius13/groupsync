@@ -45,7 +45,6 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
 
     return NextResponse.json({ projectId: invite.project.id })
   } catch (error) {
-    console.error('Invite accept error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
